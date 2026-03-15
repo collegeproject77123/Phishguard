@@ -83,7 +83,7 @@ async function syncDatasets() {
     if (data.safe_dataset) SAFE_DATASET = data.safe_dataset;
     if (data.malicious_dataset) MALICIOUS_DATASET = data.malicious_dataset;
 
-    const res = await fetch('http://127.0.0.1:5000/api/datasets');
+    const res = await fetch(DATASETS_API_URL);
     if (res.ok) {
       const json = await res.json();
       SAFE_DATASET = json.safe_dataset || SAFE_DATASET;
