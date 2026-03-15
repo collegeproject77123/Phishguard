@@ -4,8 +4,11 @@ const DEBUG = true; // Enable for debugging ML API calls
 const log = (...args) => DEBUG && console.log('[PG]', ...args);
 
 // ML API configuration
-const ML_API_URL = 'http://127.0.0.1:5000/predict';
+const ML_API_URL = 'https://phishguard-production-f818.up.railway.app/predict';
 const ML_ENABLED = true; // Set to false to disable ML predictions
+
+// Backend dataset API configuration
+const DATASETS_API_URL = 'https://phishguard-production-f818.up.railway.app/api/datasets';
 
 // Draw circular icon with OffscreenCanvas. We return 16/32/48 for DPI variants.
 async function drawIcon(hex, size) {

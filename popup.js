@@ -1,8 +1,8 @@
 // popup.js
 
 // ML API configuration (for popup to query ML predictions)
-const ML_API_URL = 'http://127.0.0.1:5000/predict';
-const REPORT_API_URL = 'http://127.0.0.1:5000/report';
+const ML_API_URL = 'https://phishguard-production-f818.up.railway.app/predict';
+const REPORT_API_URL = 'https://phishguard-production-f818.up.railway.app/report';
 const ML_ENABLED = true; // Set to false to disable ML predictions
 
 async function queryMLAPI(url) {
