@@ -70,3 +70,12 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-03-15 17:42:11
 
 ---
+
+## 2026-03-15 15:18:08
+
+- **URL**: `https://antigravity.google/auth-success?app=antigravity`
+- **Classification**: `suspicious`
+- **Reasons**: Brand name misuse detected: "Google", Machine Learning model detected suspicious characteristics (89% confidence)
+- **Timestamp**: 2026-03-15 15:18:08
+
+---
