@@ -13,13 +13,15 @@ from urllib.parse import urlparse
 import pandas as pd
 import re
 from datetime import datetime
+import json
 
 app = Flask(__name__)
 # Allow Chrome extension to make requests (extensions have chrome-extension:// origin)
 CORS(app, resources={
     r"/predict": {"origins": "*", "methods": ["POST", "OPTIONS"]},
     r"/report": {"origins": "*", "methods": ["POST", "OPTIONS"]},
-    r"/health": {"origins": "*", "methods": ["GET", "OPTIONS"]}
+    r"/health": {"origins": "*", "methods": ["GET", "OPTIONS"]},
+    r"/api/datasets": {"origins": "*", "methods": ["GET", "OPTIONS"]}
 })
 
 # Global variable to store the model
@@ -196,6 +198,29 @@ def health():
         'model_loaded': model is not None
     })
 
+@app.route('/api/datasets', methods=['GET'])
+def get_datasets():
+    """Serves the central safe and malicious datasets to the extension."""
+    safe_domains = []
+    malicious_domains = []
+    
+    try:
+        if os.path.exists('safe_domains.json'):
+            with open('safe_domains.json', 'r', encoding='utf-8') as f:
+                safe_domains = json.load(f)
+                
+        if os.path.exists('malicious_domains.json'):
+            with open('malicious_domains.json', 'r', encoding='utf-8') as f:
+                malicious_domains = json.load(f)
+                
+    except Exception as e:
+        print(f"[API] Error loading datasets: {e}")
+        
+    return jsonify({
+        'safe_dataset': safe_domains,
+        'malicious_dataset': malicious_domains
+    })
+
 @app.route('/predict', methods=['POST'])
 def predict():
     """
@@ -250,8 +275,8 @@ def predict():
         prediction_int = int(prediction)
         suspicious_prob_float = float(suspicious_prob)
         
-        # Determine if suspicious (threshold: 0.5)
-        is_suspicious = bool(prediction_int) or suspicious_prob_float > 0.5
+        # Determine if suspicious (Strict threshold: 80% confidence)
+        is_suspicious = suspicious_prob_float >= 0.8
         
         result = {
             'suspicious': bool(is_suspicious),  # Ensure Python bool, not numpy.bool_

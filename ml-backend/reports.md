@@ -52,3 +52,21 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-01-28 17:58:08
 
 ---
+
+## 2026-03-15 16:31:58
+
+- **URL**: `https://howlongtobeat.com/`
+- **Classification**: `suspicious`
+- **Reasons**: Machine Learning model detected suspicious characteristics (79% confidence)
+- **Timestamp**: 2026-03-15 16:31:58
+
+---
+
+## 2026-03-15 17:42:11
+
+- **URL**: `https://developer.chrome.com/docs/webstore/publish`
+- **Classification**: `safe`
+- **Reasons**: Domain is whitelisted
+- **Timestamp**: 2026-03-15 17:42:11
+
+---

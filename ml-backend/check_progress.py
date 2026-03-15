@@ -39,12 +39,11 @@ def check_progress():
             print(f"   - Safe/Legitimate (0): {safe_count}")
             print(f"   - Suspicious/Phishing (1): {suspicious_count}")
             
-            # Estimate progress (200K for 100K/100K split)
-            expected_total = 200000  # 100K legitimate + 100K phishing
+            # Estimate progress
+            expected_total = 235795  # Total URLs in PhiUSIIL dataset
             progress_pct = min((total_samples / expected_total) * 100, 100)
-            print(f"\n[ESTIMATE] Progress: ~{progress_pct:.1f}% complete")
+            print(f"\n[ESTIMATE] Progress: ~{progress_pct:.2f}% complete")
             print(f"           ({total_samples} / ~{expected_total} expected)")
-            print(f"           Target: 100,000 legitimate + 100,000 phishing = 200,000 total")
             
             # Check file modification time
             import datetime

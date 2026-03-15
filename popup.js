@@ -1,8 +1,8 @@
 // popup.js
 
 // ML API configuration (for popup to query ML predictions)
-const ML_API_URL = 'https://phishguard-production-f4cc.up.railway.app/predict';
-const REPORT_API_URL = 'https://phishguard-production-f4cc.up.railway.app/report';
+const ML_API_URL = 'http://127.0.0.1:5000/predict';
+const REPORT_API_URL = 'http://127.0.0.1:5000/report';
 const ML_ENABLED = true; // Set to false to disable ML predictions
 
 async function queryMLAPI(url) {
@@ -94,7 +94,7 @@ function setUI(state) {
   document.getElementById('goback').style.display  = danger ? 'inline-block' : 'none';
   document.getElementById('close').style.display   = state.label === 'malicious' ? 'inline-block' : 'none';
   document.getElementById('report').style.display = state.label === 'malicious' ? 'none' : 'inline-block';
-  document.getElementById('trust').style.display = state.label === 'malicious' ? 'none' : 'inline-block';
+  document.getElementById('trust').style.display = (state.label === 'malicious' || state.label === 'safe') ? 'none' : 'inline-block';
 }
 
 function nudgeBackgroundToSetIcon(label, tabId) {
@@ -130,12 +130,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Instant local classification (from classifier.js) with whitelist override
-  let currentState = window.classifyUrlQuick(urlText);
+  let currentState;
   let isWhite = false;
   try {
     const u = new URL(urlText);
     const host = u.hostname || '';
-    const { whitelist = [] } = await chrome.storage.local.get(['whitelist']);
+    const storageData = await chrome.storage.local.get(['whitelist', 'safe_dataset', 'malicious_dataset']);
+    const whitelist = storageData.whitelist || [];
+    const safeDataset = storageData.safe_dataset || [];
+    const maliciousDataset = storageData.malicious_dataset || [];
+
+    // Instant local classification with injected datasets
+    currentState = window.classifyUrlQuick(urlText, safeDataset, maliciousDataset);
+
     const matchesDomain = (hostname, domain) => {
       if (!hostname || !domain) return false;
       if (hostname === domain) return true;
@@ -143,8 +150,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     isWhite = whitelist.some(d => matchesDomain(host, d));
     // Also check SAFE_DATASET from classifier.js
-    if (!isWhite && window.SAFE_DATASET) {
-      isWhite = window.SAFE_DATASET.some(d => matchesDomain(host, d));
+    if (!isWhite && safeDataset) {
+      isWhite = safeDataset.some(d => matchesDomain(host, d));
     }
     if (isWhite) {
       // Remove any duplicate or old reason
@@ -164,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Skip ML for browser internal URLs
     if (!urlText.startsWith('edge://') && !urlText.startsWith('chrome://') && !urlText.startsWith('about:')) {
       const mlResult = await queryMLAPI(urlText);
-      if (mlResult && mlResult.suspicious && mlResult.probability >= 0.3) {
+      if (mlResult && mlResult.suspicious && mlResult.probability >= 0.8) {
         // ML confirms suspicious - upgrade to suspicious and add to reasons
         const mlConfidence = Math.round(mlResult.probability * 100);
         const mlReason = `Machine Learning model detected suspicious characteristics (${mlConfidence}% confidence)`;

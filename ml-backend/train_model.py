@@ -64,6 +64,7 @@ def train_model(X, y):
         min_samples_split=5,   # Minimum samples to split a node
         min_samples_leaf=2,    # Minimum samples in a leaf
         random_state=42,
+        class_weight='balanced', # Crucial: handles label imbalance (372k vs 10k)
         n_jobs=-1              # Use all CPU cores
     )
     

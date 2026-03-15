@@ -79,15 +79,26 @@ def extract_features(url, label):
         url_keyword_count = sum(1 for word in suspicious_words if word in url_text)
         features['suspicious_keywords_url'] = url_keyword_count
         
-        # Fetch webpage (with timeout)
+        # Fetch webpage (with timeout and size limit)
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
-        response = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
-        html_content = response.text.lower()
-        
-        # Parse HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
+        try:
+            response = requests.get(url, headers=headers, timeout=(3.0, 3.0), stream=True, allow_redirects=True)
+            html_raw = b""
+            for chunk in response.iter_content(chunk_size=10240):
+                html_raw += chunk
+                if len(html_raw) > 100000:
+                    break
+            html_content = html_raw.decode('utf-8', errors='ignore').lower()
+        except:
+            html_content = ""
+            
+        # Parse HTML safely
+        if html_content:
+            soup = BeautifulSoup(html_content, 'html.parser')
+        else:
+            soup = BeautifulSoup("", 'html.parser')
         
         # Check for login forms
         forms = soup.find_all('form')
@@ -121,7 +132,7 @@ def extract_features(url, label):
         features['suspicious_keywords_html'] = html_keyword_count
         
     except Exception as e:
-        print(f"Error processing {url}: {e}")
+        pass
         # Keep default values (0s)
     
     return features
@@ -421,22 +432,19 @@ def collect_sample_data(use_datasets=False):
             incremental_save_counter['count'] += len(new_data)
             if incremental_save_counter['count'] >= batch_size:
                 # Append to CSV file
-                try:
-                    if os.path.exists(csv_filename):
-                        df_existing = pd.read_csv(csv_filename, on_bad_lines='skip', engine='python')
+                for attempt in range(5):
+                    try:
                         df_new = pd.DataFrame(new_data)
-                        df_combined = pd.concat([df_existing, df_new], ignore_index=True)
-                    else:
-                        df_combined = pd.DataFrame(new_data)
-                    
-                    # Save with proper quoting to handle commas/special chars in URLs
-                    # Default quoting (QUOTE_MINIMAL) automatically escapes commas in URLs
-                    df_combined.to_csv(csv_filename, index=False)
-                    incremental_save_counter['count'] = 0
-                    print(f"[SAVED] Progress saved to {csv_filename} ({len(df_combined)} total samples)")
-                except Exception as e:
-                    print(f"[WARNING] Failed to save incrementally: {e}")
-                    # Continue processing - don't stop on save errors
+                        file_exists = os.path.exists(csv_filename)
+                        df_new.to_csv(csv_filename, mode='a', header=not file_exists, index=False)
+                        incremental_save_counter['count'] = 0
+                        break
+                    except Exception as e:
+                        if attempt == 4:
+                            print(f"[WARNING] Failed to save incrementally: {e}")
+                        else:
+                            time.sleep(1.0)
+                        # Continue processing - don't stop on save errors
     
     def process_urls_parallel(urls, label, workers=max_workers):
         """
@@ -446,24 +454,56 @@ def collect_sample_data(use_datasets=False):
         all_results = []
         lock = Lock()
         completed = 0
+        
+        # Load existing URLs to skip processing
+        existing_urls = set()
+        if os.path.exists('training_data.csv'):
+            try:
+                df_existing = pd.read_csv('training_data.csv', usecols=['url'], on_bad_lines='skip', engine='python')
+                existing_urls = set(df_existing['url'].dropna().tolist())
+                print(f"[SKIP] Found {len(existing_urls)} URLs already processed in training_data.csv")
+            except Exception as e:
+                print(f"[WARNING] Could not read existing URLs for skipping: {e}")
+                
+        # Filter urls
+        original_count = len(urls)
+        urls = [u for u in urls if u not in existing_urls]
+        print(f"[INFO] Skipping {original_count - len(urls)} URLs. {len(urls)} remaining to fetch.")
+        
         total = len(urls)
+        if total == 0:
+            return []
+            
         batch_results = []  # For incremental saving
+        start_time = time.time()
         
         def process_single_url(url):
             nonlocal completed, batch_results
             try:
                 features = extract_features(url, label)
+                
+                features_to_save = None
                 with lock:
                     completed += 1
                     batch_results.append(features)
                     
                     # Save incrementally every 100 URLs
                     if len(batch_results) >= 100:
-                        save_incrementally(batch_results, all_results, batch_size=100)
+                        features_to_save = list(batch_results)
                         batch_results.clear()
                     
                     if completed % 50 == 0 or completed == total:
-                        print(f"Progress: {completed}/{total} URLs processed... ({completed*100//total}%)")
+                        elapsed = time.time() - start_time
+                        rate = completed / elapsed if elapsed > 0 else 0.01
+                        remaining_secs = (total - completed) / rate
+                        eta_mins = int(remaining_secs // 60)
+                        eta_hrs = int(eta_mins // 60)
+                        eta_mins = eta_mins % 60
+                        print(f"Progress: {completed}/{total} URLs ({completed*100//total}%) | Speed: {rate:.1f} URLs/sec | ETA: {eta_hrs}h {eta_mins}m")
+                        
+                if features_to_save:
+                    save_incrementally(features_to_save, all_results, batch_size=0)
+                    
                 return features
             except Exception as e:
                 with lock:

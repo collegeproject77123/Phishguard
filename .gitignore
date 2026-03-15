@@ -1,0 +1,33 @@
+# Python/ML Cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Huge ML Datasets (Over GitHub limit)
+*.csv
+!app.py
+*.bak
+ml-backend/old_datasets/
+
+# Logs and debug files
+*.log
+model_results.txt
+model_results_clean.txt
+debug*.txt
+
+# IDE config
+.vs/
+.idea/
+.vscode/
+
+# Ignore the environment variables
+.env
+.venv
+env/
+venv/
+ENV/
+
+# OS generated files
+.DS_Store
+Thumbs.db
