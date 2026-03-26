@@ -196,3 +196,12 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-03-18 07:34:51
 
 ---
+
+## 2026-03-26 15:22:34
+
+- **URL**: `https://kasm.com/`
+- **Classification**: `suspicious`
+- **Reasons**: Machine Learning model detected suspicious characteristics (86% confidence)
+- **Timestamp**: 2026-03-26 15:22:34
+
+---
