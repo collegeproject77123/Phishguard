@@ -205,3 +205,12 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-03-26 15:22:34
 
 ---
+
+## 2026-04-03 10:52:46
+
+- **URL**: `https://www.bettingusa.com/`
+- **Classification**: `unknown`
+- **Reasons**: None provided
+- **Timestamp**: 2026-04-03 10:52:46
+
+---
