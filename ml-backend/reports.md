@@ -214,3 +214,12 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-04-03 10:52:46
 
 ---
+
+## 2026-04-25 22:31:02
+
+- **URL**: `http://paypal.secure-verify.tk/login/account-update`
+- **Classification**: `suspicious`
+- **Reasons**: Brand name misuse detected: "PayPal", No HTTPS details detected (Not Secure), Suspicious sensitive keywords detected, Domain uses a specialized TLD often associated with spam/abuse, Machine Learning model detected suspicious characteristics (92% confidence)
+- **Timestamp**: 2026-04-25 22:31:02
+
+---
