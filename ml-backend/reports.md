@@ -250,3 +250,12 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-05-01 13:01:01
 
 ---
+
+## 2026-05-01 17:42:47
+
+- **URL**: `https://gemini.google.com/app`
+- **Classification**: `safe`
+- **Reasons**: Domain is whitelisted or in safe dataset
+- **Timestamp**: 2026-05-01 17:42:47
+
+---
