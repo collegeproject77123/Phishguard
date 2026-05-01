@@ -241,3 +241,12 @@ Reports are automatically appended here when users click the "Report Site" butto
 - **Timestamp**: 2026-05-01 12:55:27
 
 ---
+
+## 2026-05-01 13:01:01
+
+- **URL**: `https://us-east-1.console.aws.amazon.com/ec2-instance-connect/ssh/home?region=us-east-1&connType=standard&instanceId=i-008ea889b74781640&osUser=ubuntu&sshPort=22&addressFamily=ipv4`
+- **Classification**: `safe`
+- **Reasons**: Domain is whitelisted or in safe dataset
+- **Timestamp**: 2026-05-01 13:01:01
+
+---
